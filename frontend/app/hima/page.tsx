@@ -28,11 +28,20 @@ export const metadata: Metadata = {
     type: 'website',
     url: `${SITE_URL}/hima`,
     locale: 'zh_CN',
+    images: [
+      {
+        url: `${SITE_URL}/images/hero/hero_hima.jpg`,
+        width: 1920,
+        height: 1036,
+        alt: '鸿蒙智行 MPV 七座空间与落日意境',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: '鸿蒙智行专区 | 新蓝恒成',
     description: '鸿蒙智行全系车型：尚界 H5、尊界 S800、EHV 增程版',
+    images: [`${SITE_URL}/images/hero/hero_hima.jpg`],
   },
 };
 
