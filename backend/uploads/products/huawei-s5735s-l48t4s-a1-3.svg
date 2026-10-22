@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/><stop offset="1" stop-color="#E8EEF6"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#46566B"/><stop offset="0.5" stop-color="#2E3A4A"/><stop offset="1" stop-color="#1F2937"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1220"/><stop offset="1" stop-color="#12233F"/>
+    </linearGradient>
+    <linearGradient id="brandgrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#60A5FA" stop-opacity="0.35"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#2563EB" opacity="0.10"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect width="1200" height="900" fill="url(#dots)"/>
+  <circle cx="1050" cy="130" r="230" fill="url(#glow)"/>
+  <circle cx="140" cy="790" r="200" fill="url(#glow)"/>
+  <g>
+    <ellipse cx="600" cy="720" rx="360" ry="18" fill="#0B1220" opacity="0.10"/>
+    <rect x="280" y="220" width="640" height="470" rx="18" fill="#2E3A4A"/><rect x="330" y="270" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="346" y="288" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="356" cy="358" r="7" fill="#22C55E"/>
+        <circle cx="380" cy="358" r="7" fill="#F59E0B"/><rect x="470" y="270" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="486" y="288" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="496" cy="358" r="7" fill="#22C55E"/>
+        <circle cx="520" cy="358" r="7" fill="#F59E0B"/><rect x="610" y="270" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="626" y="288" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="636" cy="358" r="7" fill="#22C55E"/>
+        <circle cx="660" cy="358" r="7" fill="#F59E0B"/><rect x="750" y="270" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="766" y="288" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="776" cy="358" r="7" fill="#22C55E"/>
+        <circle cx="800" cy="358" r="7" fill="#F59E0B"/><rect x="330" y="420" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="346" y="438" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="356" cy="508" r="7" fill="#22C55E"/>
+        <circle cx="380" cy="508" r="7" fill="#F59E0B"/><rect x="470" y="420" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="486" y="438" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="496" cy="508" r="7" fill="#22C55E"/>
+        <circle cx="520" cy="508" r="7" fill="#F59E0B"/><rect x="610" y="420" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="626" y="438" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="636" cy="508" r="7" fill="#22C55E"/>
+        <circle cx="660" cy="508" r="7" fill="#F59E0B"/><rect x="750" y="420" width="112" height="120" rx="8" fill="#1F2937" stroke="#64748B" stroke-width="1.5"/>
+        <rect x="766" y="438" width="80" height="34" rx="4" fill="#38BDF8" opacity="0.4"/>
+        <circle cx="776" cy="508" r="7" fill="#22C55E"/>
+        <circle cx="800" cy="508" r="7" fill="#F59E0B"/>
+    <g transform="translate(600 700)">
+      <rect x="-190" y="-26" width="380" height="52" rx="26" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+      <text x="0" y="9" font-size="24" fill="#2563EB" text-anchor="middle">局部细节 · 接口与工艺</text>
+    </g>
+  </g>
+  <!-- 底部信息条 -->
+  <rect x="0" y="804" width="1200" height="96" fill="#FFFFFF" opacity="0.86"/>
+  <rect x="0" y="804" width="1200" height="3" fill="url(#brandgrad)"/>
+  <text x="60" y="866" font-size="34" font-weight="600" fill="#334155">华为数通智选 S5735S-L48T4S-A1 千兆高密度接入交换机</text>
+  <g transform="translate(1140, 834)">
+    <rect x="-260" y="0" width="260" height="42" rx="21" fill="none" stroke="#2563EB" stroke-width="2"/>
+    <text x="-130" y="29" font-size="22" fill="#2563EB" text-anchor="middle">华为网络产品系列</text>
+  </g>
+  <!-- 视角标签 -->
+  <g transform="translate(1140, 60)">
+    <rect x="-150" y="-28" width="150" height="44" rx="8" fill="#2E3A4A" opacity="0.92"/>
+    <text x="-75" y="2" font-size="22" fill="#FFFFFF" text-anchor="middle">细节视图</text>
+  </g>
+</svg>

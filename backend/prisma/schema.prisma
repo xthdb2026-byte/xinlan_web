@@ -1,0 +1,382 @@
+// 新蓝恒成公司网站数据库 Schema
+// 开发环境：SQLite（无需安装数据库）
+// 生产环境：将 provider 改为 "mysql" 并更新 DATABASE_URL，可加回 @db.VarChar/@db.Text 注解
+// 注意：SQLite 不支持原生 enum，枚举字段用 String + 应用层 Zod 校验
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户表 ====================
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  password     String    // bcrypt 哈希（禁止明文存储）
+  role         String    @default("editor") // admin | editor
+  disabled     Boolean   @default(false) // 禁用后无法登录（管理员操作）
+  // 2FA 双因素认证
+  twoFactorEnabled   Boolean  @default(false) @map("two_factor_enabled")
+  twoFactorSecret    String?  @map("two_factor_secret")        // otplib secret
+  // 账户锁定（防暴力破解）
+  failedAttempts     Int      @default(0) @map("failed_attempts")
+  lockedUntil        DateTime? @map("locked_until")            // 锁定到期时间
+  // 最近登录信息（审计用）
+  lastLoginAt        DateTime? @map("last_login_at")
+  lastLoginIp        String?   @map("last_login_ip")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  loginLogs   LoginAttemptLog[]
+
+  @@map("users")
+}
+
+// ==================== 登录尝试日志（安全审计） ====================
+model LoginAttemptLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")               // 成功后关联用户
+  username  String   // 输入的用户名（即便用户不存在也要记录，便于攻击溯源）
+  success   Boolean  // 登录是否成功
+  failureReason String? @map("failure_reason")     // WRONG_PASSWORD | LOCKED | NO_USER | VALIDATION_ERROR | 2FA_REQUIRED | 2FA_FAILED
+  ip        String   // 来源 IP
+  // 设备/浏览器信息（ua-parser-js 解析）
+  device    String?  // Mobile / Desktop / Tablet / ...
+  os        String?  // macOS / Windows / iOS / Android / ...
+  browser   String?  // Chrome / Safari / Firefox / ...
+  // 地理位置（预留：通过 IP 库解析，初期可空）
+  location  String?  // JSON: { country, region, city }
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([username, createdAt])
+  @@index([ip, createdAt])
+  @@index([success, createdAt])
+  @@map("login_attempt_logs")
+}
+
+// ==================== 密码复杂度校验规则 ====================
+// （应用层 Zod 实现，无需单独表；此处注释方便 DBA 审计）
+// - 最少长度：8
+// - 至少 1 个大写字母 A-Z
+// - 至少 1 个小写字母 a-z
+// - 至少 1 个数字 0-9
+// - 至少 1 个特殊字符: !@#$%^&*()_+-=[]{}|;':",./<>?`~\
+// - 不得包含 3+ 位连续字符（如 123 / abc）
+// - 不得包含用户名（大小写不敏感）
+
+// ==================== 新闻表 ====================
+model News {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  summary     String
+  content     String
+  coverImage  String?   @map("cover_image")
+  category    String    @default("公司动态") // 公司动态 | 行业资讯
+  tags        String? // 逗号分隔
+  status      String    @default("draft") // draft | published
+  viewCount   Int       @default(0) @map("view_count")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([status, publishedAt])
+  @@index([category])
+  @@map("news")
+}
+
+// ==================== 产品表 ====================
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  category    String
+  description String
+  features    String // JSON 字符串（SQLite 兼容）— 核心卖点 [{title, detail}]
+  specs       String?  // JSON 字符串 — 技术参数表 [{group, items: [{label, value}]}]
+  priceInfo   String?  @map("price_info") // JSON 字符串 — {min, max, unit, note, updatedAt}
+  scenarios   String?  // JSON 字符串 — 适用场景 ["场景1", "场景2"]
+  coverImage  String?  @map("cover_image")
+  images      String // JSON 数组字符串（SQLite 兼容）
+  sortOrder   Int      @default(0) @map("sort_order")
+  status      String   @default("active") // draft 草稿 | active 上架 | archived 下架归档
+  viewCount   Int      @default(0) @map("view_count") // 累计浏览量（匿名计数）
+  publishedAt DateTime? @map("published_at") // 首次上架时间
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@index([category])
+  @@index([viewCount])
+  @@map("products")
+
+  documents ProductDocument[]
+  views     ProductView[]
+}
+
+// ==================== 产品浏览记录表（匿名埋点：不存 IP/UA） ====================
+model ProductView {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  referrer  String?  // 来源页面路径（匿名，不含 IP 与设备信息）
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([productId, createdAt])
+  @@map("product_views")
+}
+
+// ==================== 产品资料文档表 ====================
+model ProductDocument {
+  id            Int       @id @default(autoincrement())
+  productId     Int       @map("product_id")
+  title         String    // 文档标题，如「XL-ITS-200 智能交通信号机产品白皮书 V2.1」
+  description   String?   // 文档描述
+  category      String    @default("manual") // whitepaper 白皮书 | manual 产品手册 | driver 驱动 | sdk SDK开发包 | datasheet 规格参数 | other 其他资料
+  fileName      String    @map("file_name") // 原始文件名，下载时Content-Disposition用
+  fileUrl       String    @map("file_url")  // 存储路径，如 /uploads/2026/08/xxx.pdf（或外链URL）
+  fileType      String    @map("file_type") // MIME type，或外链
+  fileSize      Int       @default(0) @map("file_size") // 文件大小（字节），外链填0
+  downloadCount Int       @default(0) @map("download_count")
+  version       String?   // 文档版本号，如 V2.1
+  sortOrder     Int       @default(0) @map("sort_order")
+  status        String    @default("active") // active | inactive
+  publishedAt   DateTime? @map("published_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, status, sortOrder])
+  @@index([category])
+  @@map("product_documents")
+}
+
+// ==================== 解决方案表 ====================
+model Solution {
+  id          Int      @id @default(autoincrement())
+  title       String
+  slug        String   @unique
+  industry    String
+  content     String
+  coverImage  String?  @map("cover_image")
+  sortOrder   Int      @default(0) @map("sort_order")
+  status      String   @default("active") // active | inactive
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@index([industry])
+  @@map("solutions")
+}
+
+// ==================== 招聘表 ====================
+model Job {
+  id           Int      @id @default(autoincrement())
+  title        String
+  department   String
+  location     String
+  type         String   @default("full-time") // full-time | part-time | intern
+  description  String
+  requirements String
+  status       String   @default("open") // open | closed
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([department])
+  @@map("jobs")
+}
+
+// ==================== 留言表 ====================
+model Message {
+  id        Int       @id @default(autoincrement())
+  name      String
+  phone     String
+  email     String?
+  company   String?
+  content   String
+  status    String    @default("pending") // pending | read | replied
+  reply     String? // 管理员回复内容
+  repliedAt DateTime? @map("replied_at") // 回复时间
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("messages")
+}
+
+// ==================== 投递申请表 ====================
+model Application {
+  id          Int      @id @default(autoincrement())
+  jobId       Int      @map("job_id")
+  name        String
+  phone       String
+  email       String?
+  resumeUrl   String?  @map("resume_url")
+  coverLetter String?  @map("cover_letter")
+  status      String   @default("pending") // pending | reviewed | accepted | rejected
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([jobId])
+  @@index([status])
+  @@map("applications")
+}
+
+// ==================== 媒体库表 ====================
+model Media {
+  id        Int      @id @default(autoincrement())
+  filename  String   // 原始文件名
+  filepath  String   // 存储路径（相对 uploads 目录）
+  url       String   // 访问 URL
+  mimeType  String   @map("mime_type")
+  size      Int      // 文件大小（字节）
+  width     Int?     // 图片宽度
+  height    Int?     // 图片高度
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  logoConfig LogoConfig?
+
+  @@index([createdAt])
+  @@map("media")
+}
+
+// ==================== 页面配置表 ====================
+model PageConfig {
+  id        Int      @id @default(autoincrement())
+  page      String // home | about | products | ...
+  section   String // hero | values | about_entry | ...
+  content   String // JSON 字符串（SQLite 兼容）
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([page, section])
+  @@map("page_configs")
+}
+
+// ==================== 页面配置历史版本表 ====================
+// 每次更新 PageConfig 时写入快照，支持后台查看历史与一键回滚
+model PageConfigRevision {
+  id        Int      @id @default(autoincrement())
+  page      String
+  section   String
+  content   String // JSON 字符串（该版本完整快照）
+  operator  String // 操作人信息
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([page, section, createdAt])
+  @@map("page_config_revisions")
+}
+
+// ==================== 首页轮播 Banner 表 ====================
+// 存在启用中的 Banner 时，首页 Hero 切换为轮播模式；为空时保持默认单图模式
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String
+  subtitle  String?
+  image     String // 图片 URL（/uploads/... 或外链）
+  link      String? // 点击跳转链接（可选）
+  sortOrder Int      @default(0) @map("sort_order")
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([enabled, sortOrder])
+  @@map("banners")
+}
+
+// ==================== Logo 配置表 ====================
+model LogoConfig {
+  id        Int      @id @default(autoincrement())
+  mediaId   Int?     @unique @map("media_id") // 当前启用的 logo 对应的媒体 ID
+  name      String   @default("default") // 标识名称
+  isDefault Boolean  @default(false) @map("is_default")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  media     Media?  @relation(fields: [mediaId], references: [id])
+
+  @@map("logo_configs")
+}
+
+// ==================== 底部联系信息表 ====================
+model FooterContact {
+  id        Int      @id @default(autoincrement())
+  // 站点名（如 湖南新蓝恒成信息技术有限公司）
+  companyName String   @map("company_name")
+  // 公司地址
+  address   String
+  // 联系电话
+  phone     String
+  // 联系邮箱
+  email     String
+  // 版权文字前缀（自动追加年份）
+  copyrightText String  @default("湖南新蓝恒成信息技术有限公司 版权所有") @map("copyright_text")
+  // 预留：扩展字段（社交链接、备案号等）
+  extras    String?  // JSON 字符串
+  // 永远只保留一条（单例），但使用自增ID便于upsert
+  version   Int      @default(1) @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("footer_contacts")
+}
+
+// ==================== 底部链接表 ====================
+model FooterLink {
+  id        Int      @id @default(autoincrement())
+  // 分组：info = 快速链接（隐私政策/服务条款/网站地图）| product | solution | about | custom
+  group     String   @default("info")
+  // 链接显示文本
+  label     String
+  // 链接地址（支持 /xxx 或 https://xxx）
+  href      String
+  // 图标名（lucide-react 图标标识，允许为空=不显示图标）
+  iconName  String?  @map("icon_name")
+  // 是否新窗口打开
+  openInNew Boolean  @default(false) @map("open_in_new")
+  // 排序
+  sortOrder Int      @default(0) @map("sort_order")
+  // 启用状态
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([group, sortOrder])
+  @@map("footer_links")
+}
+
+// ==================== 友情链接表 ====================
+model FriendLink {
+  id        Int      @id @default(autoincrement())
+  title     String
+  url       String
+  sortOrder Int      @default(0) @map("sort_order")
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([enabled, sortOrder])
+  @@map("friend_links")
+}
+
+// ==================== 操作日志表 ====================
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String   // upload | delete | set_default | switch
+  targetType String  @map("target_type") // logo | media | ...
+  targetId  Int      @map("target_id")
+  detail    String?  // JSON 字符串，记录操作详情
+  operator  String   // 操作人信息
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([targetType, targetId])
+  @@index([action])
+  @@map("audit_logs")
+}

@@ -1,0 +1,24 @@
+# 依赖
+node_modules/
+
+# 构建产物
+frontend/.next/
+backend/dist/
+release/
+
+# 环境与密钥（保留 .env.example / .env.production.example 模板）
+.env
+.env.local
+.env.*.local
+
+# 运行时
+logs/
+.runtime/
+*.log
+
+# 本地数据库（可通过 prisma seed 重建）
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# 系统文件
+.DS_Store

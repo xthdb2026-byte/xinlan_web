@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" fill="none">
+  <g>
+    <path d="M28 2.3L3.5 11.6v14c0 12.6 8.9 24.3 20.5 28 11.6-3.7 20.5-15.4 20.5-28v-14L28 2.3z" fill="#1a56db"/>
+    <path d="M28 7.5L10.5 15.7v10.5c0 10.5 7.4 20.3 16 23.6 8.6-3.3 16-13.1 16-23.6V15.7L28 7.5z" fill="#fff"/>
+    <path d="M28 11.7c-3.3 4.4-8.8 6.7-8.8 12.2 0 4.9 4 8.9 8.8 8.9s8.8-4 8.8-8.9c0-5.5-5.5-7.8-8.8-12.2z" fill="#1a56db"/>
+  </g>
+  <g fill="#1a56db" font-family="'PingFang SC','Microsoft YaHei',sans-serif">
+    <text x="64" y="24" font-size="18" font-weight="700" letter-spacing="4">新蓝恒成</text>
+    <text x="64" y="44" font-size="10" font-weight="500" letter-spacing="6">XINLAN HENGCHENG</text>
+  </g>
+</svg>

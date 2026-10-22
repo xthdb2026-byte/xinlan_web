@@ -1,0 +1,48 @@
+# 依赖目录（镜像内重新安装，避免平台不一致）
+node_modules
+
+# 编译产物（镜像内重新编译）
+dist
+
+# 测试相关
+coverage
+*.test.ts
+*.test.js
+*.spec.ts
+
+# 环境变量文件（避免泄露密钥）
+.env
+.env.local
+.env.development
+.env.production
+.env.production.local
+
+# 版本控制
+.git
+.gitignore
+.gitattributes
+
+# IDE 与编辑器
+.vscode
+.idea
+*.swp
+*.swo
+
+# 系统与日志
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 数据库与上传文件（生产环境由 volume 挂载，不打包进镜像）
+prisma/dev.db
+prisma/*.db-journal
+uploads
+logs
+
+# 其他
+Dockerfile
+.dockerignore
+.eslintrc.json
+.prettierrc
